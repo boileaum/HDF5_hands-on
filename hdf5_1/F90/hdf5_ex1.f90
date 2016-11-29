@@ -18,19 +18,31 @@ PROGRAM HDF5_EX
 
      CHARACTER(LEN=10), PARAMETER :: filename = "example.h5" ! File name
      CHARACTER(LEN=8), PARAMETER :: dsetname = "IntArray"     ! Dataset name
+     CHARACTER(LEN=10), PARAMETER :: dsetname3d = "IntArray3D"     ! Dataset name
      INTEGER, PARAMETER     ::   rank = 2                        
      INTEGER, PARAMETER     ::   NX = 10                        
      INTEGER, PARAMETER     ::   NY = 6                        
+     INTEGER, PARAMETER     ::   NZ = 3                        
 
      INTEGER(HID_T) :: file, dataset, dataspace
-     INTEGER(HSIZE_T), DIMENSION(2) :: dims
+     INTEGER(HID_T) :: dataspace3d
+     INTEGER(HSIZE_T), DIMENSION(3) :: dims
      INTEGER     ::   status
      INTEGER, DIMENSION(NX,NY) :: data
-     INTEGER     :: i,j
+     INTEGER, DIMENSION(NX,NY,NZ) :: data3d
+     INTEGER     :: i,j,k
      
      DO j=1,NY
        DO i=1,NX
         data(i,j) = i-1 + (j-1)*NX;
+       ENDDO
+     ENDDO
+        
+     DO k=1,NZ
+       DO j=1,NY
+         DO i=1,NX
+           data3d(i,j,k) = i-1 + (j-1)*NX + (k-1)*NX*NY
+         ENDDO
        ENDDO
      ENDDO
         
@@ -75,6 +87,34 @@ PROGRAM HDF5_EX
      !
      CALL h5sclose_f(dataspace, status)
 
+     ! 
+     ! Create the dataspace.
+     !
+     dims(3) = NZ
+     CALL h5screate_simple_f(3, dims, dataspace3d, status)
+     
+     
+     !
+     ! Create the dataset default properties.
+     !
+     CALL h5dcreate_f(file, dsetname3d, H5T_NATIVE_INTEGER, dataspace3d, &
+                      dataset, status)
+      
+     !
+     ! Write the data actually
+     !
+     CALL h5dwrite_f(dataset, H5T_NATIVE_INTEGER, data3d, dims, status)
+
+
+     !   
+     ! End access to the dataset and release resources used by it.
+     ! 
+     CALL h5dclose_f(dataset, status)
+
+     !
+     ! Terminate access to the data space.
+     !
+     CALL h5sclose_f(dataspace3d, status)
      ! 
      ! Close the file.
      !
