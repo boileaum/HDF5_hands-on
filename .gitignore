@@ -1,5 +1,7 @@
 *.o
+*.h5
 
 hdf5_1/F90/hdf5_ex1
+hdf5_1/F90/solution/hdf5_ex1
 
 hdf5_1/C/hdf5_ex1
